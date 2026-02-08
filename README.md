@@ -107,7 +107,7 @@ Layer  | Neurons     | Activation | Purpose |
 
 We use the **Rectified Linear Unit** for the hidden layer. It helps the network learn complex patterns by keeping only positive signals.
 
-$$\operatorname {ReLU} (x)=\max(0,x)={\begin{cases}x&{\text{if }}x>0\\0&x\leq 0\end{cases}}$$
+$${ReLU} (x)=\max(0,x)={\begin{cases}x&{\text{if }}x>0\\0&x\leq 0\end{cases}}$$
 
 #### 2. Optimization (SGD)
 
