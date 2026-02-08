@@ -103,7 +103,7 @@ The model is a simple feed-forward neural network:
 
 - **Initialization**: He Initialization (optimized for ReLU).
 
-- **Optimizer**: Stochastic Gradient Descent (SGD) with Mini-batches.
+- **Optimizer**: [Stochastic Gradient Descent](https://en.wikipedia.org/wiki/Stochastic_gradient_descent) (SGD) with [Mini-batches](https://www.geeksforgeeks.org/deep-learning/mini-batch-gradient-descent-in-deep-learning/).
 
 - **Learning Rate Decay**: 20% reduction every 20 epochs.
 
