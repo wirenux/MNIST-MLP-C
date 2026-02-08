@@ -22,9 +22,9 @@ This project allows you to train a neural network on the MNIST dataset and perfo
 
 ### Dependencies
 
-- [GCC Compiler]() with OpenMP support
+- [GCC Compiler](https://gcc.gnu.org/) with OpenMP support
 
-- [MNIST Dataset]() files (extracted in a `data/` folder):
+- [MNIST Dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset) files (extracted in a `data/` folder):
     - `train-images-idx3-ubyte`
     - `train-labels-idx1-ubyte`
 
@@ -44,7 +44,7 @@ brew install libomp
 
 ### Build
 
-The project uses [OpenMP]() and aggressive compiler optimizations to maximize CPU performance.
+The project uses [OpenMP](https://www.openmp.org/) and aggressive compiler optimizations to maximize CPU performance.
 
 ```bash
 git clone https://github.com/wirenux/MNIST-MLP-C
@@ -94,8 +94,8 @@ The model is a simple feed-forward neural network:
 | Layer  | Neurons     | Activation |
 |:------:|:-----------:|:----------:|
 | Input  | 784 (28x28) | -          |
-| Hidden | 128         | ReLU       |
-| Output | 10          | Softmax    |
+| Hidden | 128         | [ReLU](https://en.wikipedia.org/wiki/Rectified_linear_unit)       |
+| Output | 10          | [Softmax](https://en.wikipedia.org/wiki/Softmax_function)    |
 
 - **Initialization**: He Initialization (optimized for ReLU).
 
