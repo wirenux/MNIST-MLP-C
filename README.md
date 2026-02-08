@@ -124,7 +124,7 @@ To test your own digit:
 
 - **Memory Efficiency**: The model structure is serialized directly to a binary file for instant loading.
 
-### 👀 🫵 ⏭️ ⏰ ヾ(＾ ∇ ＾).
+# 👀 🫵 ⏭️ ⏰ ヾ(＾ ∇ ＾).
 
 #### License
 
