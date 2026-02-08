@@ -5,7 +5,7 @@ LDFLAGS = -lomp -L$(shell brew --prefix libomp)/lib
 INCLUDES = -I$(shell brew --prefix libomp)/include
 
 all:
-	$(CC) $(CFLAGS) $(INCLUDES) main.c -o mnist $(LDFLAGS) -lm
+	$(CC) $(CFLAGS) $(INCLUDES) src/main.c -o build/mnist $(LDFLAGS) -lm
 
 run: all
-	@./mnist
+	@./build/mnist

@@ -130,7 +130,7 @@ int main() {
     }
 
     Model *m = malloc(sizeof(Model));
-    FILE *f_mod = fopen("mnist_mlp_best.bin", "rb");
+    FILE *f_mod = fopen("data/mnist_mlp_best.bin", "rb");
     if (f_mod) {
         fread(m, sizeof(Model), 1, f_mod);
         fclose(f_mod);
@@ -191,7 +191,7 @@ int main() {
             printf("Epoch %d : Precision %.2f%%\n", epoch, (float)correct/600);
             if (epoch % 20 == 0) lr *= 0.8f;
         }
-        FILE *f_save = fopen("mnist_mlp_best.bin", "wb");
+        FILE *f_save = fopen("data/mnist_mlp_best.bin", "wb");
         fwrite(m, sizeof(Model), 1, f_save);
         fclose(f_save);
     }
