@@ -18,6 +18,10 @@ This project allows you to train a neural network on the MNIST dataset and perfo
 
 ## Images
 
+<img src="assets/main.png" width=500 alt="ASCII View">
+
+<img src="assets/training.png" width=400 alt="Training Demo">
+
 ## Requirements
 
 ### Dependencies
