@@ -66,10 +66,15 @@ void predict_external_image(char *filename, Model *m) {
     printf("\nImage loaded (%s) :\n", filename);
     for (int r = 0; r < 28; r++) {
         for (int c = 0; c < 28; c++) {
-            printf(pixels[r * 28 + c] > 128 ? "##" : "  ");
+            unsigned char p = pixels[r * 28 + c];
+            if (p > 220)      printf("██"); // Full density
+            else if (p > 150) printf("▓▓"); // Dark shade
+            else if (p > 80)  printf("▒▒"); // Medium shade
+            else if (p > 20)  printf("░░"); // Light shade
+            else              printf("  "); // Empty
         }
         printf("\n");
-    }
+    } 
 
     float h_layer[HIDDEN_SIZE], scores[OUTPUT_SIZE];
     for (int j = 0; j < HIDDEN_SIZE; j++) {
@@ -204,7 +209,14 @@ int main() {
 
         printf("\nImage :\n");
         for (int r = 0; r < 28; r++) {
-            for (int c = 0; c < 28; c++) printf(raw_imgs[idx * INPUT_SIZE + (r * 28 + c)] > 128 ? "##" : "  ");
+            for (int c = 0; c < 28; c++) {
+                unsigned char p = raw_imgs[idx * INPUT_SIZE + (r * 28 + c)];
+                if (p > 220)      printf("██");
+                else if (p > 150) printf("▓▓");
+                else if (p > 80)  printf("▒▒");
+                else if (p > 20)  printf("░░");
+                else              printf("  ");
+            }
             printf("\n");
         }
 
