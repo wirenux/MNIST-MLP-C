@@ -91,21 +91,41 @@ IA trust:
 FINAL RESULT: 3
 ```
 
-### Network Architecture
+### Network Architecture & Theory
 
 The model is a simple feed-forward neural network:
 
-| Layer  | Neurons     | Activation |
-|:------:|:-----------:|:----------:|
-| Input  | 784 (28x28) | -          |
-| Hidden | 128         | [ReLU](https://en.wikipedia.org/wiki/Rectified_linear_unit)       |
-| Output | 10          | [Softmax](https://en.wikipedia.org/wiki/Softmax_function)    |
+Layer  | Neurons     | Activation | Purpose |
+|:------:|:-----------:|:----------:| :--- |
+| **Input** | 784 (28x28) | -          | Receives normalized pixel data (0.0 - 1.0) |
+| **Hidden** | 128         | [ReLU](https://en.wikipedia.org/wiki/Rectified_linear_unit) | Feature extraction and non-linearity |
+| **Output** | 10          | [Softmax](https://en.wikipedia.org/wiki/Softmax_function) | Classifies into digits 0-9 |
 
-- **Initialization**: He Initialization (optimized for ReLU).
+### Mathematical Foundation
 
-- **Optimizer**: [Stochastic Gradient Descent](https://en.wikipedia.org/wiki/Stochastic_gradient_descent) (SGD) with [Mini-batches](https://www.geeksforgeeks.org/deep-learning/mini-batch-gradient-descent-in-deep-learning/).
+#### 1. Activation Function (ReLU)
 
-- **Learning Rate Decay**: 20% reduction every 20 epochs.
+We use the **Rectified Linear Unit** for the hidden layer. It helps the network learn complex patterns by keeping only positive signals.
+
+$$\operatorname {ReLU} (x)=\max(0,x)={\begin{cases}x&{\text{if }}x>0\\0&x\leq 0\end{cases}}$$
+
+#### 2. Optimization (SGD)
+
+The network learns by minimizing the cost function $Q(w)$ using **Stochastic Gradient Descent**. Instead of calculating the error for the entire dataset at once, we use **Mini-batches** of 32 images to update weights efficiently:
+
+$$Q(w) = \frac{1}{n} \sum_{i=1}^{n} Q_{i}(w)$$
+
+#### 3. Output Probability (Softmax)
+
+To get a clear "confidence" percentage for each digit, the final output is processed through the Softmax function:
+
+$$\sigma(\mathbf{z})_i = \frac{e^{z_i}}{\sum_{j=1}^K e^{z_j}}$$
+
+  **Initialization**: He Initialization (optimized for ReLU).
+
+  **Optimizer**: [Stochastic Gradient Descent](https://en.wikipedia.org/wiki/Stochastic_gradient_descent) (SGD) with [Mini-batches](https://www.geeksforgeeks.org/deep-learning/mini-batch-gradient-descent-in-deep-learning/).
+
+  **Learning Rate Decay**: 20% reduction every 20 epochs.
 
 ### Custom Images
 
@@ -113,7 +133,7 @@ To test your own digit:
 
 1. Create a **28x28 pixel** image.
 2. Draw in **white on a black background** (matching MNSIT format).
-3. Export as **PGM** (link)
+3. Export as **PGM** ([https://convertio.co/fr/png-pgm/](https://convertio.co/fr/png-pgm/))
 4. Save it as `data/MNIST_TEST.pgm`
 
 ### Performance Tuning
