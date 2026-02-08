@@ -44,7 +44,7 @@ brew install libomp
 
 ### Build
 
-The project uses OpenMP and aggressive compiler optimizations to maximize CPU performance.
+The project uses [OpenMP]() and aggressive compiler optimizations to maximize CPU performance.
 
 ```bash
 git clone link
