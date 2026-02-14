@@ -57,10 +57,37 @@ void draw_brush(int gx, int gy, int value) {
 }
 
 void canvas_to_buffer(uint8_t out[784]) {
-    for (int y = 0; y < 28; y++)
-        for (int x = 0; x < 28; x++)
-            out[y*28 + x] = canvas[y][x];
+    int min_x=27, min_y=27, max_x=0, max_y=0;
+
+    // find bounding box of non-zero pixels
+    for (int y=0;y<28;y++)
+        for (int x=0;x<28;x++)
+            if(canvas[y][x]>0){
+                if(x<min_x) min_x=x;
+                if(y<min_y) min_y=y;
+                if(x>max_x) max_x=x;
+                if(y>max_y) max_y=y;
+            }
+
+    int w = max_x - min_x + 1;
+    int h = max_y - min_y + 1;
+    float scale = (w > h ? 24.0f/w : 24.0f/h); // scale to fit 24x24 box
+
+    // center in 28x28 buffer
+    for (int y=0;y<28;y++)
+        for (int x=0;x<28;x++)
+            out[y*28+x] = 0;
+
+    for (int y=0;y<h;y++){
+        for (int x=0;x<w;x++){
+            int xx = (int)((x*scale) + (28 - w*scale)/2);
+            int yy = (int)((y*scale) + (28 - h*scale)/2);
+            if(xx>=0 && xx<28 && yy>=0 && yy<28)
+                out[yy*28+xx] = canvas[min_y+y][min_x+x];
+        }
+    }
 }
+
 
 #pragma GCC optimize ("no-tree-vectorize")
 void predict_from_buffer(uint8_t *pixels, Model *m) {
@@ -70,7 +97,7 @@ void predict_from_buffer(uint8_t *pixels, Model *m) {
         float sum = m->b1[j];
         for (int k = 0; k < 784; k++)
             sum += (pixels[k] / 255.0f) * m->w1[j][k];
-        h_layer[j] = (sum > 0) ? sum : 0;
+        h_layer[j] = (sum > 0) ? sum : 0;   // ReLU
     }
 
     for (int j = 0; j < OUTPUT_SIZE; j++) {
