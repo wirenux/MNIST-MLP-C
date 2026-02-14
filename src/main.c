@@ -35,13 +35,22 @@ void sdl_draw_and_predict(Model *m);
 void init_model(Model *m);
 
 void draw_brush(int gx, int gy, int value) {
-    for (int dy = -brush_size; dy <= brush_size; dy++) {
-        for (int dx = -brush_size; dx <= brush_size; dx++) {
-            if (dx*dx + dy*dy <= brush_size*brush_size) {
-                int x = gx + dx;
-                int y = gy + dy;
-                if (x >= 0 && x < 28 && y >= 0 && y < 28)
-                    canvas[y][x] = value;
+    float halo_radius = 2.0f; // number of pixels in grey halo
+    for (int dy = -(brush_size + (int)halo_radius); dy <= brush_size + (int)halo_radius; dy++) {
+        for (int dx = -(brush_size + (int)halo_radius); dx <= brush_size + (int)halo_radius; dx++) {
+            int x = gx + dx;
+            int y = gy + dy;
+            if (x >= 0 && x < GRID && y >= 0 && y < GRID) {
+                float dist = sqrtf(dx*dx + dy*dy);
+                if (dist <= brush_size + halo_radius) {
+                    float factor;
+                    if (dist <= brush_size)
+                        factor = 1.0f; // full white
+                    else
+                        factor = 1.0f - (dist - brush_size) / halo_radius; // fade grey
+                    int v = (int)(value * factor);
+                    if (v > canvas[y][x]) canvas[y][x] = v; // only lighten
+                }
             }
         }
     }
@@ -165,6 +174,18 @@ void sdl_draw_and_predict(Model *m) {
     if (do_predict) {
         uint8_t buffer[784];
         canvas_to_buffer(buffer);
+
+        for (int r = 0; r < 28; r++) {
+            for (int c = 0; c < 28; c++) {
+                uint8_t p = canvas[r][c];
+                if (p > 220)      printf("██"); // Full density
+                else if (p > 150) printf("▓▓"); // Dark shade
+                else if (p > 80)  printf("▒▒"); // Medium shade
+                else if (p > 20)  printf("░░"); // Light shade
+                else              printf("  "); // Empty
+            }
+            printf("\n");
+        }
         predict_from_buffer(buffer, m);
     }
 
