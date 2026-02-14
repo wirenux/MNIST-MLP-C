@@ -18,7 +18,7 @@
 #define SCALE 10
 
 uint8_t canvas[GRID][GRID];
-int brush_size = 1;
+int brush_size = 0;
 
 typedef struct {
     float w1[HIDDEN_SIZE][INPUT_SIZE];
@@ -343,7 +343,7 @@ int main() {
         printf("No existing model found, starting training...\n");
         init_model(m);
         float lr = 0.05f;
-        for (int epoch = 0; epoch < 200; epoch++) {
+        for (int epoch = 0; epoch < 50; epoch++) {
             int correct = 0;
             double start = omp_get_wtime();
             #pragma omp parallel for reduction(+:correct) schedule(dynamic)
