@@ -18,7 +18,7 @@
 #define SCALE 10
 
 uint8_t canvas[GRID][GRID];
-int brush_size = 2;
+int brush_size = 1;
 
 typedef struct {
     float w1[HIDDEN_SIZE][INPUT_SIZE];
@@ -62,6 +62,7 @@ void canvas_to_buffer(uint8_t out[784]) {
             out[y*28 + x] = canvas[y][x];
 }
 
+#pragma GCC optimize ("no-tree-vectorize")
 void predict_from_buffer(uint8_t *pixels, Model *m) {
     float h_layer[HIDDEN_SIZE], scores[OUTPUT_SIZE];
 
