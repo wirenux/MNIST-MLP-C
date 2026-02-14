@@ -3,6 +3,8 @@
 #include <math.h>
 #include <stdint.h>
 #include <time.h>
+#include <SDL.h>
+#include <string.h>
 #include <omp.h>
 
 #define INPUT_SIZE 784      // nb of pixels in 28x28 image
@@ -11,12 +13,165 @@
 #define TRAIN_SIZE 60000    // nb of training samples in MNIST
 #define BATCH_SIZE 32
 
+#define WIN 280
+#define GRID 28
+#define SCALE 10
+
+uint8_t canvas[GRID][GRID];
+int brush_size = 2;
+
 typedef struct {
     float w1[HIDDEN_SIZE][INPUT_SIZE];
     float b1[HIDDEN_SIZE];
     float w2[OUTPUT_SIZE][HIDDEN_SIZE];
     float b2[OUTPUT_SIZE];
 } Model;
+
+void softmax(float *input, int size);
+void print_confidence_graph(float *scores);
+void predict_from_buffer(uint8_t *pixels, Model *m);
+void predict_external_image(char *filename, Model *m);
+void sdl_draw_and_predict(Model *m);
+void init_model(Model *m);
+
+void draw_brush(int gx, int gy, int value) {
+    for (int dy = -brush_size; dy <= brush_size; dy++) {
+        for (int dx = -brush_size; dx <= brush_size; dx++) {
+            if (dx*dx + dy*dy <= brush_size*brush_size) {
+                int x = gx + dx;
+                int y = gy + dy;
+                if (x >= 0 && x < 28 && y >= 0 && y < 28)
+                    canvas[y][x] = value;
+            }
+        }
+    }
+}
+
+void canvas_to_buffer(uint8_t out[784]) {
+    for (int y = 0; y < 28; y++)
+        for (int x = 0; x < 28; x++)
+            out[y*28 + x] = canvas[y][x];
+}
+
+void predict_from_buffer(uint8_t *pixels, Model *m) {
+    float h_layer[HIDDEN_SIZE], scores[OUTPUT_SIZE];
+
+    for (int j = 0; j < HIDDEN_SIZE; j++) {
+        float sum = m->b1[j];
+        for (int k = 0; k < 784; k++)
+            sum += (pixels[k] / 255.0f) * m->w1[j][k];
+        h_layer[j] = (sum > 0) ? sum : 0;
+    }
+
+    for (int j = 0; j < OUTPUT_SIZE; j++) {
+        scores[j] = m->b2[j];
+        for (int k = 0; k < HIDDEN_SIZE; k++)
+            scores[j] += h_layer[k] * m->w2[j][k];
+    }
+
+    softmax(scores, OUTPUT_SIZE);
+    print_confidence_graph(scores);
+
+    int pred = 0;
+    for (int i = 1; i < 10; i++)
+        if (scores[i] > scores[pred]) pred = i;
+
+    printf("\n\033[1;34mDRAW RESULT: %d\033[0m\n", pred);
+}
+
+void sdl_draw_and_predict(Model *m) {
+    SDL_Init(SDL_INIT_VIDEO);
+
+    SDL_Window *win = SDL_CreateWindow("Draw Digit (- ENTER to predict -)",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        WIN, WIN, 0);
+
+    SDL_Renderer *r = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
+
+    memset(canvas, 0, sizeof(canvas));
+
+    int running = 1;
+    int do_predict = 0;
+
+    printf("\n--- DRAW MODE ---\n");
+    printf("Left click = draw\n");
+    printf("Right click = erase\n");
+    printf("+ / - = brush size\n");
+    printf("C = clear\n");
+    printf("ENTER = predict\n");
+    printf("ESC = cancel\n\n");
+
+    while (running) {
+        SDL_Event e;
+        while (SDL_PollEvent(&e)) {
+
+            if (e.type == SDL_QUIT) running = 0;
+
+            if (e.type == SDL_KEYDOWN) {
+                if (e.key.keysym.sym == SDLK_ESCAPE) {
+                    running = 0;
+                }
+
+                if (e.key.keysym.sym == SDLK_RETURN) {
+                    do_predict = 1;
+                    running = 0;
+                }
+
+                if (e.key.keysym.sym == SDLK_c) {
+                    memset(canvas, 0, sizeof(canvas));
+                }
+
+                if (e.key.keysym.sym == SDLK_EQUALS || e.key.keysym.sym == SDLK_PLUS) {
+                    if (brush_size < 4) brush_size++;
+                }
+
+                if (e.key.keysym.sym == SDLK_MINUS) {
+                    if (brush_size > 1) brush_size--;
+                }
+            }
+
+            if (e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONDOWN) {
+                int mx, my;
+                SDL_GetMouseState(&mx, &my);
+                int gx = mx / SCALE;
+                int gy = my / SCALE;
+
+                if (gx>=0 && gx<28 && gy>=0 && gy<28) {
+                    if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT))
+                        draw_brush(gx, gy, 255);
+
+                    if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_RIGHT))
+                        draw_brush(gx, gy, 0);
+                }
+            }
+        }
+
+        SDL_SetRenderDrawColor(r, 0,0,0,255);
+        SDL_RenderClear(r);
+
+        for (int y=0;y<28;y++){
+            for(int x=0;x<28;x++){
+                uint8_t v = canvas[y][x];
+                SDL_SetRenderDrawColor(r, v,v,v,255);
+                SDL_Rect rect = {x*SCALE, y*SCALE, SCALE, SCALE};
+                SDL_RenderFillRect(r, &rect);
+            }
+        }
+
+        SDL_RenderPresent(r);
+        SDL_Delay(16);
+    }
+
+    if (do_predict) {
+        uint8_t buffer[784];
+        canvas_to_buffer(buffer);
+        predict_from_buffer(buffer, m);
+    }
+
+    SDL_DestroyRenderer(r);
+    SDL_DestroyWindow(win);
+    SDL_Quit();
+}
 
 void softmax(float *input, int size) {
     float max = input[0], sum = 0.0;
@@ -74,7 +229,7 @@ void predict_external_image(char *filename, Model *m) {
             else              printf("  "); // Empty
         }
         printf("\n");
-    } 
+    }
 
     float h_layer[HIDDEN_SIZE], scores[OUTPUT_SIZE];
     for (int j = 0; j < HIDDEN_SIZE; j++) {
@@ -198,11 +353,15 @@ int main() {
 
     int idx;
     while(1) {
-        printf("\nIndex (0-59999), -2 for 'data/MNIST_TEST.pgm', or -1 to quit : ");
+        printf("\nIndex (0-59999)\n-3 = draw digit\n-2 = load data/MNIST_TEST.pgm\n-1 = quit\n> ");
         if (scanf("%d", &idx) != 1 || idx == -1) break;
 
         if (idx == -2) {
             predict_external_image("data/MNIST_TEST.pgm", m);
+            continue;
+        }
+        if (idx == -3) {
+            sdl_draw_and_predict(m);
             continue;
         }
         if (idx < 0 || idx > 59999) continue;
