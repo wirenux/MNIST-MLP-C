@@ -353,7 +353,7 @@ int main() {
 
     int idx;
     while(1) {
-        printf("\nIndex (0-59999)\n-3 = draw digit\n-2 = load data/MNIST_TEST.pgm\n-1 = quit\n> ");
+        printf("\n[0-59999]=MNIST | -3=Draw | -2=PGM | -1=Quit : ");
         if (scanf("%d", &idx) != 1 || idx == -1) break;
 
         if (idx == -2) {
