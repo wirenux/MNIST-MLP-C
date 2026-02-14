@@ -316,7 +316,7 @@ int main() {
         printf("No existing model found, starting training...\n");
         init_model(m);
         float lr = 0.05f;
-        for (int epoch = 0; epoch < 100; epoch++) {
+        for (int epoch = 0; epoch < 200; epoch++) {
             int correct = 0;
             double start = omp_get_wtime();
             #pragma omp parallel for reduction(+:correct) schedule(dynamic)
